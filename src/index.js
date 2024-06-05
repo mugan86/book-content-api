@@ -29,20 +29,26 @@ async function fetchMarkdown(owner, repo, path, branch) {
 
 app.get('/markdown/:path', async (req, res) => {
     try {
-        const { path } = String((req.params.path).replace('html', 'md'));
-        // const pathPrincipal = path.i > -1 ? path.split('#')[0] : path;
+        // const { path } = String((req.params.path).replace('html', 'md'));
+        // const pathPrincipal = path.indexOf('#') > -1 ? path.split('#')[0] : path;
         const owner = process.env.GITHUB_OWNER;
         const repo = process.env.GITHUB_REPO;
         const branch = process.env.GITHUB_REPO_BRANCH;
-        const markdownContent = await fetchMarkdown(owner, repo, pathPrincipal, branch);
+        const markdownContent = await fetchMarkdown(owner, repo, req.params.path, branch);
 
         const showdown = require('showdown'),
             converter = new showdown.Converter(),
             html = removeUrlsIds(converter.makeHtml(markdownContent));
-        res.send(html);
+        res.json({
+            message: `Content ok`,
+            html
+        });
     } catch (error) {
         console.error(error);
-        res.status(500).send('Error al obtener el contenido del archivo Markdown');
+        res.status(500).json({
+            message: 'Error al obtener el contenido del archivo Markdown. Comprueba si el fichero seleccionado es el correcto',
+            html: ``
+        });
     }
 });
 
